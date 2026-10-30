@@ -54,9 +54,9 @@
   var gif = '';
   if (ex.gif_file) {
     var base = 'videos/' + ex.gif_file;
-    var cdn = 'https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@main/' + base;
-    var raw = 'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/' + base;
-    var gh = 'https://github.com/hasaneyldrm/exercises-dataset/raw/main/' + base;
+    var cdn = 'https://cdn.jsdelivr.net/gh/wyattyhh/exercises-dataset@main/' + base;
+    var raw = 'https://raw.githubusercontent.com/wyattyhh/exercises-dataset/main/' + base;
+    var gh = 'https://github.com/wyattyhh/exercises-dataset/raw/main/' + base;
     gif = '<div class="gif-wrap"><img src="' + cdn + '" alt="' + esc(ex.name) + ' animation" onerror="if(!this.dataset.f1){this.dataset.f1=1;this.src=\'' + raw + '\'}else if(!this.dataset.f2){this.dataset.f2=1;this.src=\'' + gh + '\'}"></div>';
   } else {
     gif = '<div class="no-gif">No animation in the dataset for this exercise — follow the steps below.</div>';
