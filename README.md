@@ -48,7 +48,10 @@ placeholder with a Retry button and an "open animation" link.
 | `assets/i18n/<code>.js` | Instruction translations, loaded on demand per language (`es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`, `zh`). English is built in. |
 | `assets/i18n/names-zh.js` | Chinese exercise names and facet translations. |
 | `embed.html` | The single-exercise embed page (see below). |
-| `embed-data.js` | Data for the embed page: all 1,324 exercises in English. |
+| `embed-data.js` | **Generated** data for the embed page: all 1,324 exercises in English. Never edit by hand — see "Regenerating embed data" below. |
+| `embed-custom.js` | Hand-written entries the generator never touches: exercises the dataset does not have, substitute GIFs, and form cues / common mistakes kept in this project. |
+| `scripts/generate-embed-data.mjs` | The generator script. |
+| `.github/workflows/generate-embed-data.yml` | GitHub Action that runs the generator (manual, weekly, or when the script changes) and commits the result. |
 
 ## The embed page (`embed.html`)
 
@@ -93,6 +96,15 @@ If `session` is given, it wins. Otherwise the page composes a line from
 `sets` + (`reps` / `work` / `duration`) + `rest` + `note`, skipping any that
 are missing. With no session parameters at all, no session box is shown.
 
+Coaching notes work the same way, as parameters: `?cue=` and `?mistake=`
+win over anything stored in the project files, so a plan can give the same
+exercise different notes without a repo change — useful when another
+person's AI is building a plan from this project. Example:
+
+```
+embed.html?ex=3-4-sit-up&cue=Keep your lower back on the floor&mistake=Rushing the reps
+```
+
 Examples (URL-encode spaces and special characters):
 
 ```
@@ -136,16 +148,36 @@ in this repo — use only what the person asking for the plan tells you.
 5. **Keep the plan short.** The plan itself should be day headings + embeds
    (+ a warm-up / rest note if needed). Detailed guidance lives in the embed.
 
+### Regenerating embed data
+
+`embed-data.js` is generated, never hand-edited:
+
+```sh
+node scripts/generate-embed-data.mjs
+```
+
+By default it fetches the dataset from the backup fork
+(`cdn.jsdelivr.net/gh/wyattyhh/exercises-dataset@main/data/exercises.json`);
+pass `--input <url-or-local-file>` to use another source, or `--output <path>`
+to write elsewhere. The same script runs in GitHub Actions — manually from
+the Actions tab, weekly on Sundays, or when the script itself changes — and
+commits `embed-data.js` back to main only if it actually changed. Pushing to
+main triggers a GitHub Pages rebuild automatically.
+
 ### Adding a form cue or a common mistake to an exercise
 
-Most exercises in `embed-data.js` have no cue/mistake (the embed simply hides
-those sections). A small set has hand-written ones. To add or change one:
+Two ways, in priority order:
 
-1. Find the exercise's entry in `embed-data.js` by its slug (or dataset id).
-2. Set `"cue"` and/or `"mistake"` to short, single-sentence strings.
-3. Push the updated `embed-data.js` to this repo; GitHub Pages rebuilds and
-   every embed using that exercise picks it up. No Notion change is needed,
-   because the embed URL is unchanged.
+1. **As URL parameters (preferred for a single plan):** add `?cue=` and/or
+   `?mistake=` to that embed's URL. No repo change needed, and different
+   plans can give the same exercise different notes.
+2. **In the project (for a reusable default):** add or edit the exercise's
+   entry in `embed-custom.js` — never in `embed-data.js`, or the next
+   regeneration will wipe it. Push the change; GitHub Pages rebuilds and
+   every embed using that exercise picks it up without a URL change.
+
+Most dataset exercises have no cue/mistake, and the embed simply hides
+those sections when none is provided.
 
 Entry shape:
 
@@ -164,7 +196,8 @@ Entry shape:
 ```
 
 For a **new custom exercise** that is not in the dataset (e.g. a text-only
-move with no GIF), add a new entry with `"gif_file": null` and your own steps;
+move with no GIF), add a new entry to `embed-custom.js` (never to the
+generated `embed-data.js`) with `"gif_file": null` and your own steps;
 the embed shows a "no animation" note instead of a broken image. Never invent
 a dataset id or GIF filename — use the exact values from the dataset, or
 `null` when there is none.
@@ -180,7 +213,7 @@ Do not present a substitute GIF as if it were the exact move.
 ## Contributing / updating
 
 - Browser changes go in `index.html` (and `assets/i18n/` for translations).
-- Embed changes go in `embed.html` / `embed-data.js`.
+- Embed changes go in `embed.html`, `embed-custom.js`, or the generator (`scripts/generate-embed-data.mjs`) — never by hand in `embed-data.js`.
 - Push updates to this repo; do not use the Muse share link for updates, and
   do not edit the dataset fork. After pushing, check that the GitHub Pages
   build finished and that the live site serves the new files before calling
