@@ -1,0 +1,187 @@
+# Open Exercise Library
+
+A searchable browser for **1,324 exercises**, plus a minimal single-exercise page
+designed to be embedded (for example, in a Notion workout plan).
+
+- **Live browser:** https://wyattyhh.github.io/open-exercise-library/
+- **Embed page:** https://wyattyhh.github.io/open-exercise-library/embed.html
+- **Source repo:** https://github.com/wyattyhh/open-exercise-library
+
+## Data source and credits
+
+All exercises, GIF animations and step-by-step instructions come from the
+[exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset) on GitHub.
+GIF media © Gym Visual.
+
+A clean backup fork of that dataset lives at
+https://github.com/wyattyhh/exercises-dataset. It is a backup only — do not
+develop in it. All development happens in this repo (`open-exercise-library`).
+
+## The browser (`index.html`)
+
+Open the live site and you can:
+
+- **Search** by exercise name (English, or Chinese when the language is set to Chinese).
+- **Filter** by body part (10), target muscle (19) and equipment (28). Filters
+  appear as removable chips.
+- **Open a detail view** for any exercise: GIF animation, numbered steps,
+  primary and secondary muscles.
+- **Surprise me** for a random exercise, and **Show more** to load more results.
+- Switch **light / dark mode**.
+- Switch **language** with the language selector at the top of the toolbar.
+  Instructions are translated into 10 languages (en, es, fr, hi, it, ko, pl,
+  ru, tr, zh) from the dataset itself. Exercise names are English-only in the
+  dataset, except Chinese names, which were authored separately for this
+  project. Changing the language sets `?lang=<code>` in the URL and reloads the
+  page, so a language-specific link can be shared, e.g.
+  `https://wyattyhh.github.io/open-exercise-library/?lang=zh`.
+
+GIFs load from jsDelivr CDN mirrors first, falling back to
+`raw.githubusercontent.com`. If a GIF does not load, the page shows a
+placeholder with a Retry button and an "open animation" link.
+
+### Files
+
+| File | What it is |
+| --- | --- |
+| `index.html` | The browser itself (search, filters, detail view, language switcher). |
+| `assets/i18n/<code>.js` | Instruction translations, loaded on demand per language (`es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`, `zh`). English is built in. |
+| `assets/i18n/names-zh.js` | Chinese exercise names and facet translations. |
+| `embed.html` | The single-exercise embed page (see below). |
+| `embed-data.js` | Data for the embed page: all 1,324 exercises in English. |
+
+## The embed page (`embed.html`)
+
+A deliberately bare page for embedding **one exercise at a time**: no search,
+no filters, no navigation — just the exercise name, target/equipment, GIF,
+steps, and (where available) a form cue and a common mistake. It is made to
+fit inside a Notion embed block, but any iframe/embed container works.
+
+### URL format
+
+```
+https://wyattyhh.github.io/open-exercise-library/embed.html?ex=<slug>
+```
+
+- `<slug>` is the exercise name lowercased, with every run of non-letters/
+  non-digits replaced by a single hyphen, e.g.:
+  - `Push-up` → `?ex=push-up`
+  - `3/4 sit-up` → `?ex=3-4-sit-up`
+  - `Dumbbell lateral raise` → `?ex=dumbbell-lateral-raise`
+- **Unambiguous alternative:** `?id=<dataset id>`, e.g. `?id=0662` for Push-up.
+  Use this when two exercises share a name (8 names in the dataset occur
+  twice); the slug form returns the first one, the id form returns the exact one.
+- Without `?ex=` or `?id=`, the page shows a short "exercise not found" note.
+
+### Session parameters (sets, reps, rest, …)
+
+Add session info to the URL and the embed renders it as a highlighted box
+above the GIF, so a workout plan does not need to repeat the numbers in its
+own text:
+
+| Parameter | Meaning | Example |
+| --- | --- | --- |
+| `session` | A ready-made session line, shown verbatim | `session=3×30–45s · Rest 60–90s` |
+| `sets` | Number of sets | `sets=3` |
+| `reps` | Reps per set | `reps=10-15` |
+| `work` | Work per set, when reps do not apply | `work=30m at 70-80%` |
+| `duration` | Hold time per set (alias for `work`) | `duration=30-45s` |
+| `rest` | Rest between sets | `rest=60-90s` |
+| `note` | Extra note, appended to the line | `note=walk back between runs` |
+
+If `session` is given, it wins. Otherwise the page composes a line from
+`sets` + (`reps` / `work` / `duration`) + `rest` + `note`, skipping any that
+are missing. With no session parameters at all, no session box is shown.
+
+Examples (URL-encode spaces and special characters):
+
+```
+# Structured — renders "3 sets · × 10-15 · Rest 60-90s"
+embed.html?ex=push-up&sets=3&reps=10-15&rest=60-90s
+
+# Ready-made — renders the string exactly as written
+embed.html?ex=pull-up&session=4× as many good reps as you can (aim 5–8) · Rest 60–90s
+
+# Timed hold
+embed.html?ex=plank&session=3×30–45s · Rest 60–90s
+```
+
+### Embedding in Notion
+
+1. In a Notion page, add an **Embed** block.
+2. Paste the full embed URL (including `?ex=` and any session parameters).
+3. One embed block per exercise. A plan page can be just day headings plus
+   embed blocks — the embed already shows the exercise name and session info,
+   so repeating them as text above each embed is redundant.
+
+## Making a new exercise plan with this project
+
+This section is written for an AI assistant (or a human) building a plan for
+someone else from this repo. No personal data about any plan's owner is stored
+in this repo — use only what the person asking for the plan tells you.
+
+1. **Find exercises in the browser.** Search by name or filter by body part,
+   target muscle and equipment. Prefer exercises whose equipment matches what
+   the person actually has at home (e.g. body weight only).
+2. **Check the detail view** for each candidate: GIF, steps, muscles worked,
+   and whether it is a reef-free, joint-friendly, beginner-suitable choice for
+   that person's level. When in doubt, prefer the simpler, lower-impact
+   variant.
+3. **Build one embed URL per exercise**, with session parameters for that
+   person's sets, reps and rest (see the table above). Use `?id=` when a name
+   is ambiguous.
+4. **Put the URLs in the plan** as one embed block per exercise, grouped under
+   day headings. Do not also write the exercise name and reps as text above
+   each embed — the embed already renders both.
+5. **Keep the plan short.** The plan itself should be day headings + embeds
+   (+ a warm-up / rest note if needed). Detailed guidance lives in the embed.
+
+### Adding a form cue or a common mistake to an exercise
+
+Most exercises in `embed-data.js` have no cue/mistake (the embed simply hides
+those sections). A small set has hand-written ones. To add or change one:
+
+1. Find the exercise's entry in `embed-data.js` by its slug (or dataset id).
+2. Set `"cue"` and/or `"mistake"` to short, single-sentence strings.
+3. Push the updated `embed-data.js` to this repo; GitHub Pages rebuilds and
+   every embed using that exercise picks it up. No Notion change is needed,
+   because the embed URL is unchanged.
+
+Entry shape:
+
+```js
+"push-up": {
+  "name": "Push-up",
+  "id": "0662",
+  "target": "Chest, triceps",
+  "body_part": null,
+  "equipment": "None",
+  "gif_file": "0662-I4hDWkc.gif",
+  "steps": ["Feet shoulder-width apart, …"],
+  "cue": "…",
+  "mistake": "…"
+}
+```
+
+For a **new custom exercise** that is not in the dataset (e.g. a text-only
+move with no GIF), add a new entry with `"gif_file": null` and your own steps;
+the embed shows a "no animation" note instead of a broken image. Never invent
+a dataset id or GIF filename — use the exact values from the dataset, or
+`null` when there is none.
+
+### A note on "Exact" vs "Substitute"
+
+Some plan exercises use a dataset GIF that is close to, but not exactly, the
+planned move (for example, a squat shown with a squat-to-overhead-reach GIF).
+In those cases the first step in the entry must say so plainly, e.g.
+"Note: GIF is a squat to overhead reach — for a plain squat, skip the reach."
+Do not present a substitute GIF as if it were the exact move.
+
+## Contributing / updating
+
+- Browser changes go in `index.html` (and `assets/i18n/` for translations).
+- Embed changes go in `embed.html` / `embed-data.js`.
+- Push updates to this repo; do not use the Muse share link for updates, and
+  do not edit the dataset fork. After pushing, check that the GitHub Pages
+  build finished and that the live site serves the new files before calling
+  an update done.
