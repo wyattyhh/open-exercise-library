@@ -34,6 +34,28 @@
 (function(){
   var params = new URLSearchParams(location.search);
   var slug = (params.get('ex') || '').toLowerCase();
+  // Language for the steps: ?lang=zh, es, fr, hi, it, ko, pl, ru, tr.
+  // Names, target and equipment stay English (the dataset's name field
+  // is English-only); only the steps are translated. Anything else, or
+  // no ?lang= at all, means English. Custom-only exercises (those that
+  // exist only in embed-custom.js) have no translation and fall back
+  // to English.
+  var LANGS = ['es','fr','hi','it','ko','pl','ru','tr','zh'];
+  var lang = (params.get('lang') || 'en').toLowerCase();
+  if (LANGS.indexOf(lang) < 0) lang = 'en';
+  document.documentElement.lang = lang;
+  var UI = {
+    en: {steps:'Steps', cue:'Form cue', mistake:'Common mistake', equipment:'Equipment', noGif:'No animation in the dataset for this exercise — follow the steps below.', notFound:'Exercise not found. Add ?ex=<slug> to the URL, e.g. ?ex=push-up.'},
+    es: {steps:'Pasos', cue:'Consejo de forma', mistake:'Error común', equipment:'Equipo', noGif:'No hay animación en el conjunto de datos para este ejercicio; sigue los pasos a continuación.', notFound:'Ejercicio no encontrado. Añade ?ex=<slug> a la URL, por ejemplo ?ex=push-up.'},
+    fr: {steps:'Étapes', cue:'Conseil de forme', mistake:'Erreur courante', equipment:'Équipement', noGif:'Aucune animation dans le jeu de données pour cet exercice — suivez les étapes ci-dessous.', notFound:'Exercice introuvable. Ajoutez ?ex=<slug> à l’URL, par exemple ?ex=push-up.'},
+    hi: {steps:'चरण', cue:'फॉर्म सुझाव', mistake:'आम गलती', equipment:'उपकरण', noGif:'इस व्यायाम के लिए डेटासेट में कोई एनिमेशन नहीं है — नीचे दिए गए चरणों का पालन करें।', notFound:'व्यायाम नहीं मिला। URL में ?ex=<slug> जोड़ें, जैसे ?ex=push-up।'},
+    it: {steps:'Passaggi', cue:'Consiglio sulla forma', mistake:'Errore comune', equipment:'Attrezzatura', noGif:'Nessuna animazione nel set di dati per questo esercizio — segui i passaggi qui sotto.', notFound:'Esercizio non trovato. Aggiungi ?ex=<slug> all’URL, ad esempio ?ex=push-up.'},
+    ko: {steps:'단계', cue:'자세 팁', mistake:'흔한 실수', equipment:'장비', noGif:'이 운동에 대한 데이터셋 애니메이션이 없습니다 — 아래 단계를 따라 하세요.', notFound:'운동을 찾을 수 없습니다. URL에 ?ex=<slug>를 추가하세요. 예: ?ex=push-up.'},
+    pl: {steps:'Kroki', cue:'Wskazówka techniczna', mistake:'Częsty błąd', equipment:'Sprzęt', noGif:'Brak animacji w zbiorze danych dla tego ćwiczenia — postępuj zgodnie z poniższymi krokami.', notFound:'Nie znaleziono ćwiczenia. Dodaj ?ex=<slug> do adresu URL, np. ?ex=push-up.'},
+    ru: {steps:'Шаги', cue:'Подсказка по технике', mistake:'Распространённая ошибка', equipment:'Оборудование', noGif:'В наборе данных нет анимации для этого упражнения — следуйте шагам ниже.', notFound:'Упражнение не найдено. Добавьте ?ex=<slug> в URL, например ?ex=push-up.'},
+    tr: {steps:'Adımlar', cue:'Form ipucu', mistake:'Yaygın hata', equipment:'Ekipman', noGif:'Bu egzersiz için veri setinde animasyon yok — aşağıdaki adımları izleyin.', notFound:'Egzersiz bulunamadı. URL’ye ?ex=<slug> ekleyin, örneğin ?ex=push-up.'},
+    zh: {steps:'步骤', cue:'动作提示', mistake:'常见错误', equipment:'器械', noGif:'该动作在数据集中没有动画，请按以下步骤练习。', notFound:'未找到该动作。请在网址中加入 ?ex=<slug>，例如 ?ex=push-up。'}
+  }[lang];
   var app = document.getElementById('app');
   var esc = function(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
 
@@ -49,22 +71,34 @@
     });
   }
 
+  // One tiny per-exercise file (~1 KB), not the whole dataset.
+  // For a non-English lang this is embed-data/<lang>/<slug>.json, i.e.
+  // the dataset's own translation — deliberately NOT the custom entry,
+  // whose steps are English-only. If the translation file is missing
+  // (custom-only exercise, or a gap in the dataset), fall back to English.
+  function fetchEx(s) {
+    var path = lang === 'en'
+      ? 'embed-data/' + encodeURIComponent(s) + '.json'
+      : 'embed-data/' + lang + '/' + encodeURIComponent(s) + '.json';
+    return fetch(path)
+      .then(function(r){ if (!r.ok) throw new Error('not found'); return r.json(); });
+  }
+  function fetchExEnglish(s) {
+    var custom = window.EMBED_CUSTOM || {};
+    if (custom[s]) return Promise.resolve(custom[s]);
+    return fetch('embed-data/' + encodeURIComponent(s) + '.json')
+      .then(function(r){ if (!r.ok) throw new Error('not found'); return r.json(); })
+      .catch(function(){
+        return loadFullDataFallback().then(function(all){
+          return all[s] || custom[s] || null;
+        });
+      });
+  }
   function findEx() {
     var custom = window.EMBED_CUSTOM || {};
-    if (slug && custom[slug]) return Promise.resolve(custom[slug]);
     if (slug) {
-      // Fast path: one tiny per-exercise file (~1 KB), not the whole dataset.
-      return fetch('embed-data/' + encodeURIComponent(slug) + '.json')
-        .then(function(r){ if (!r.ok) throw new Error('not found'); return r.json(); })
-        .then(function(ex){
-          if (custom[slug]) return custom[slug];
-          return ex;
-        })
-        .catch(function(){
-          return loadFullDataFallback().then(function(all){
-            return all[slug] || custom[slug] || null;
-          });
-        });
+      if (lang === 'en') return fetchExEnglish(slug);
+      return fetchEx(slug).catch(function(){ return fetchExEnglish(slug); });
     }
     if (params.get('id')) {
       // Resolve the id through the small index, then load that one file.
@@ -73,8 +107,8 @@
         .then(function(index){
           var s = index[params.get('id')];
           if (!s) return null;
-          if (custom[s]) return custom[s];
-          return fetch('embed-data/' + encodeURIComponent(s) + '.json').then(function(r){ return r.json(); });
+          if (lang === 'en') return fetchExEnglish(s);
+          return fetchEx(s).catch(function(){ return fetchExEnglish(s); });
         })
         .catch(function(){ return null; });
     }
@@ -83,7 +117,7 @@
 
   findEx().then(function(ex){
     if (!ex) {
-      app.innerHTML = '<div class="err">Exercise not found. Add <code>?ex=&lt;slug&gt;</code> to the URL, e.g. <code>?ex=push-up</code>.</div>';
+      app.innerHTML = '<div class="err">' + esc(UI.notFound) + '</div>';
       return;
     }
     document.title = ex.name + ' — exercise';
@@ -100,15 +134,15 @@
       gif = '<div class="gif-wrap"><img src="' + mirrors[0] + '" alt="' + esc(ex.name) + ' animation" data-mirror="0" onerror="var m=JSON.parse(this.dataset.mirrors||\'[]\');var i=parseInt(this.dataset.mirror,10)+1;if(i<m.length){this.dataset.mirror=i;this.src=m[i];}"></div>';
       gif = gif.replace('data-mirror="0"', 'data-mirror="0" data-mirrors=\'' + JSON.stringify(mirrors).replace(/'/g, '') + '\'');
     } else {
-      gif = '<div class="no-gif">No animation in the dataset for this exercise — follow the steps below.</div>';
+      gif = '<div class="no-gif">' + esc(UI.noGif) + '</div>';
     }
     var steps = (ex.steps || []).map(function(s){ return '<li>' + esc(s) + '</li>'; }).join('');
     // Coaching notes can also travel with the embed itself:
     // ?cue= and ?mistake= win over anything stored in the project files.
     var cue = params.get('cue') || ex.cue;
     var mistake = params.get('mistake') || ex.mistake;
-    var cueHtml = cue ? '<div class="cue"><b>Form cue:</b> ' + esc(cue) + '</div>' : '';
-    var mistakeHtml = mistake ? '<div class="mistake"><b>Common mistake:</b> ' + esc(mistake) + '</div>' : '';
+    var cueHtml = cue ? '<div class="cue"><b>' + esc(UI.cue) + ':</b> ' + esc(cue) + '</div>' : '';
+    var mistakeHtml = mistake ? '<div class="mistake"><b>' + esc(UI.mistake) + ':</b> ' + esc(mistake) + '</div>' : '';
     var idHtml = ex.id ? ' · Dataset id: ' + esc(ex.id) : '';
     // Session info, from the URL: either a ready-made ?session= string, or
     // composed from ?sets= ?reps= ?work= ?duration= ?rest= ?note=
@@ -126,10 +160,10 @@
     var sessionHtml = session ? '<div class="session">' + esc(session) + '</div>' : '';
     app.innerHTML =
       '<h1>' + esc(ex.name) + '</h1>' +
-      '<div class="chips"><span class="chip">' + esc(ex.target) + '</span><span class="chip">Equipment: ' + esc(ex.equipment) + '</span></div>' +
+      '<div class="chips"><span class="chip">' + esc(ex.target) + '</span><span class="chip">' + esc(UI.equipment) + ': ' + esc(ex.equipment) + '</span></div>' +
       sessionHtml +
       gif +
-      '<h2>Steps</h2><ol>' + steps + '</ol>' +
+      '<h2>' + esc(UI.steps) + '</h2><ol>' + steps + '</ol>' +
       cueHtml + mistakeHtml +
       '<div class="src">GIF source: exercises-dataset on GitHub, media © Gym visual.' + idHtml + ' · <a href="index.html">Open the full Exercise Browser</a></div>';
   });

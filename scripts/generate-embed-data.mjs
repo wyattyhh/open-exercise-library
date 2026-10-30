@@ -1,5 +1,14 @@
 // Generate embed-data.js AND embed-data/<slug>.json from the exercises dataset.
 //
+// Language versions: ?lang= on the embed page loads a translated steps
+// file, embed-data/<lang>/<slug>.json, for every dataset language except
+// English (English is the plain embed-data/<slug>.json file). The embed
+// page falls back to the English file when a translation is missing, and
+// exercises that exist only in embed-custom.js have no translation at all,
+// so they always render in English. Exercise names, target and equipment
+// stay English in every language — only the steps are translated, exactly
+// as the dataset provides them (its name field is English-only).
+//
 // This file is the ONLY place embed-data.js comes from. Never edit
 // embed-data.js by hand — your edits will be lost the next time this runs.
 //
@@ -72,7 +81,10 @@ async function loadDataset(source) {
 const dataset = await loadDataset(input);
 if (!Array.isArray(dataset)) throw new Error("dataset is not an array");
 
+const LANGS = ["es", "fr", "hi", "it", "ko", "pl", "ru", "tr", "zh"];
 const out = {};
+const translated = {}; // lang -> slug -> entry (same shape, translated steps)
+for (const lang of LANGS) translated[lang] = {};
 for (const e of dataset) {
   const gifFile = e.gif_url ? e.gif_url.split("/").pop() : null;
   const entry = {
@@ -87,12 +99,14 @@ for (const e of dataset) {
     mistake: null,
   };
   const s = slug(e.name);
-  if (s in out) {
-    // Same name twice in the dataset: keep the first under the plain slug
-    // and store the second under slug-<dataset id> so both stay reachable.
-    out[`${s}-${e.id}`] = entry;
-  } else {
-    out[s] = entry;
+  const key = s in out ? `${s}-${e.id}` : s;
+  out[key] = entry;
+  // Same key in every language, so ?id= and slug lookups work identically.
+  for (const lang of LANGS) {
+    const steps = e.instruction_steps?.[lang];
+    if (Array.isArray(steps) && steps.length > 0) {
+      translated[lang][key] = { ...entry, steps };
+    }
   }
 }
 
@@ -126,3 +140,11 @@ await writeFile(
   "utf8",
 );
 console.log(`wrote ${perDir}: ${Object.keys(out).length} per-exercise files + index.json (${Object.keys(index).length} ids)`);
+for (const lang of LANGS) {
+  const langDir = path.join(perDir, lang);
+  await mkdir(langDir, { recursive: true });
+  for (const [key, entry] of Object.entries(translated[lang])) {
+    await writeFile(path.join(langDir, `${key}.json`), JSON.stringify(entry), "utf8");
+  }
+  console.log(`wrote ${langDir}: ${Object.keys(translated[lang]).length} files`);
+}

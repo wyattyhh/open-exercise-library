@@ -56,6 +56,7 @@ placeholder with a Retry button and an "open animation" link.
 | `embed.html` | The single-exercise embed page (see below). |
 | `embed-data.js` | **Generated** data for the embed page: all 1,324 exercises in English. Never edit by hand — see "Regenerating embed data" below. Kept as a fallback; the embed page normally loads only its own per-exercise file. |
 | `embed-data/<slug>.json` | **Generated** one tiny file per exercise (~1 KB). This is what the embed page loads — so one embed does not have to download the whole dataset. `embed-data/index.json` maps dataset id → slug for `?id=` lookups. |
+| `embed-data/<lang>/<slug>.json` | **Generated** translated steps for one exercise, for `es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`, `zh`. The embed page loads these when `?lang=` is set (see below). Names, target and equipment stay English; custom-only exercises have no translation and fall back to English. |
 | `embed-custom.js` | Hand-written entries the generator never touches: exercises the dataset does not have, substitute GIFs, and form cues / common mistakes kept in this project. |
 | `scripts/generate-embed-data.mjs` | The generator script. |
 | `.github/workflows/generate-embed-data.yml` | GitHub Action that runs the generator (manual, weekly, or when the script changes) and commits the result. |
@@ -154,6 +155,19 @@ in this repo — use only what the person asking for the plan tells you.
    each embed — the embed already renders both.
 5. **Keep the plan short.** The plan itself should be day headings + embeds
    (+ a warm-up / rest note if needed). Detailed guidance lives in the embed.
+
+### Embed language: `?lang=`
+
+Add `?lang=` to an embed URL to get the steps in another language, e.g.
+`embed.html?ex=push-up&lang=zh`. Supported codes are the dataset's own
+10 languages minus English: `es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`,
+`zh`. The embed loads `embed-data/<lang>/<slug>.json` — the dataset's own
+translation, not the English custom entry — and its small UI labels
+(Steps, Form cue, Common mistake, Equipment) switch to that language too.
+An unknown code falls back to English, and a missing translation (for
+example a custom-only exercise like dead-hang) falls back to the English
+entry. `?cue=` / `?mistake=` still win over everything, so a cue in the
+embed's own language can be passed that way.
 
 ### Regenerating embed data
 
