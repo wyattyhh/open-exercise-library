@@ -1,5 +1,5 @@
 // GENERATED — do not edit by hand.
-// Source: /home/hatch/workspace/user/files/BA66CA9B-3A64-4CBF-860B-66EF5DDA99B4-exercises.json
+// Source: https://cdn.jsdelivr.net/gh/wyattyhh/exercises-dataset@main/data/exercises.json
 // Regenerate with: node scripts/generate-embed-data.mjs
 window.EMBED_EXERCISES = {
  "3-4-sit-up": {
