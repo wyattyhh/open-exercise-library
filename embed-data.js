@@ -1,3 +1,6 @@
+// GENERATED — do not edit by hand.
+// Source: /home/hatch/workspace/user/files/BA66CA9B-3A64-4CBF-860B-66EF5DDA99B4-exercises.json
+// Regenerate with: node scripts/generate-embed-data.mjs
 window.EMBED_EXERCISES = {
  "3-4-sit-up": {
   "name": "3/4 sit-up",
@@ -15254,20 +15257,23 @@ window.EMBED_EXERCISES = {
   "mistake": null
  },
  "inverted-row": {
-  "name": "Inverted row",
+  "name": "inverted row",
   "id": "0499",
-  "target": "Upper back",
-  "body_part": null,
-  "equipment": "Bar / sturdy table",
+  "target": "upper back",
+  "body_part": "back",
+  "equipment": "body weight",
   "gif_file": "0499-bZGHsAZ.gif",
   "steps": [
-   "Lie under a bar, body straight, heels on the floor.",
-   "Grip the bar just wider than your shoulders.",
-   "Pull your chest to the bar, elbows close.",
-   "Lower slowly, keeping your hips up."
+   "Set up a bar at waist height or use a suspension trainer.",
+   "Stand facing the bar or suspension trainer, with your feet shoulder-width apart.",
+   "Grab the bar or handles with an overhand grip, slightly wider than shoulder-width apart.",
+   "Lean back, keeping your body straight and your heels on the ground.",
+   "Pull your chest towards the bar or handles, squeezing your shoulder blades together.",
+   "Pause for a moment at the top, then slowly lower yourself back to the starting position.",
+   "Repeat for the desired number of repetitions."
   ],
-  "cue": "Keep a straight line from head to heels.",
-  "mistake": "Letting your hips sag."
+  "cue": null,
+  "mistake": null
  },
  "inverted-row-bent-knees": {
   "name": "inverted row bent knees",
@@ -18863,20 +18869,21 @@ window.EMBED_EXERCISES = {
   "mistake": null
  },
  "pull-up": {
-  "name": "Pull-up",
+  "name": "pull-up",
   "id": "0652",
-  "target": "Lats, back",
-  "body_part": null,
-  "equipment": "Pull-up bar",
+  "target": "lats",
+  "body_part": "back",
+  "equipment": "body weight",
   "gif_file": "0652-lBDjFxJ.gif",
   "steps": [
-   "Hang from the bar, palms facing away, arms fully extended.",
-   "Squeeze your shoulder blades together.",
-   "Pull your chest up towards the bar.",
-   "Lower slowly back to a full hang."
+   "Hang from a pull-up bar with your palms facing away from you and your arms fully extended.",
+   "Engage your core and squeeze your shoulder blades together.",
+   "Pull your body up towards the bar by bending your elbows and bringing your chest towards the bar.",
+   "Pause at the top of the movement, then slowly lower your body back down to the starting position.",
+   "Repeat for the desired number of repetitions."
   ],
-  "cue": "Keep your core tight; do not swing.",
-  "mistake": "Kipping or half reps."
+  "cue": null,
+  "mistake": null
  },
  "push-and-pull-bodyweight": {
   "name": "push and pull bodyweight",
@@ -18932,20 +18939,20 @@ window.EMBED_EXERCISES = {
   "mistake": null
  },
  "push-up": {
-  "name": "Push-up",
+  "name": "push-up",
   "id": "0662",
-  "target": "Chest, triceps",
-  "body_part": null,
-  "equipment": "None",
+  "target": "pectorals",
+  "body_part": "chest",
+  "equipment": "body weight",
   "gif_file": "0662-I4hDWkc.gif",
   "steps": [
-   "Start in a high plank, hands slightly wider than shoulders.",
-   "Brace your core, body in a straight line.",
-   "Lower your chest towards the floor, elbows at about 45 degrees.",
-   "Press back up to the start."
+   "Start in a high plank position with your hands slightly wider than shoulder-width apart and your feet together.",
+   "Engage your core and lower your body towards the ground by bending your elbows, keeping your body in a straight line.",
+   "Pause for a moment when your chest is just above the ground, then push yourself back up to the starting position by straightening your arms.",
+   "Repeat for the desired number of repetitions."
   ],
-  "cue": "Full range, chest close to the floor.",
-  "mistake": "Hips sagging or piking up."
+  "cue": null,
+  "mistake": null
  },
  "push-up-bosu-ball": {
   "name": "push-up (bosu ball)",
@@ -23592,203 +23599,5 @@ window.EMBED_EXERCISES = {
   ],
   "cue": null,
   "mistake": null
- },
- "split-squat": {
-  "name": "Split squat",
-  "id": "2368",
-  "target": "Legs, glutes",
-  "body_part": null,
-  "equipment": "None",
-  "gif_file": "2368-9E25EOx.gif",
-  "steps": [
-   "One foot forward, one foot back, torso tall.",
-   "Lower straight down until both knees are bent.",
-   "Front knee over the ankle, back knee close to the floor.",
-   "Drive up through the front foot, then switch sides."
-  ],
-  "cue": "Keep your torso upright, not leaning forward.",
-  "mistake": "Front knee drifting past the toes."
- },
- "dead-hang": {
-  "name": "Dead hang",
-  "id": null,
-  "target": "Grip, shoulders",
-  "body_part": null,
-  "equipment": "Pull-up bar",
-  "gif_file": null,
-  "steps": [
-   "Hang from the bar, arms fully extended.",
-   "Shoulders engaged, not shrugged up to your ears.",
-   "Breathe normally, hold 20–30 seconds.",
-   "Drop down gently, do not jump off."
-  ],
-  "cue": "Relaxed but active shoulders.",
-  "mistake": "Swinging or shrugging."
- },
- "superman-hold": {
-  "name": "Superman hold",
-  "id": "0803",
-  "target": "Back, glutes",
-  "body_part": null,
-  "equipment": "None",
-  "gif_file": "0803-4GqRrAk.gif",
-  "steps": [
-   "Note: GIF is a Superman push-up — the plan version is a hold, not the push-up.",
-   "Lie face down, arms extended overhead.",
-   "Lift your arms and legs together.",
-   "Squeeze your back and glutes, hold briefly.",
-   "Lower slowly."
-  ],
-  "cue": "Lift from your back and glutes, not your neck.",
-  "mistake": "Cranking your neck up to look forward."
- },
- "side-plank": {
-  "name": "Side plank",
-  "id": "3544",
-  "target": "Core, obliques",
-  "body_part": null,
-  "equipment": "None",
-  "gif_file": "3544-5VXmnV5.gif",
-  "steps": [
-   "Note: GIF is an incline side plank — the floor version is the full version.",
-   "Lie on your side, elbow under your shoulder.",
-   "Lift your hips until your body is a straight line.",
-   "Hold, then switch sides."
-  ],
-  "cue": "Stack your feet or stagger them for balance.",
-  "mistake": "Hips dropping towards the floor."
- },
- "plank": {
-  "name": "Plank",
-  "id": "0464",
-  "target": "Core",
-  "body_part": null,
-  "equipment": "None",
-  "gif_file": "0464-CosupLu.gif",
-  "steps": [
-   "Note: GIF is a front plank with twist — for a plain plank, hold still, no twist.",
-   "Elbows under your shoulders, forearms on the floor.",
-   "Body in a straight line from head to heels.",
-   "Squeeze your glutes and brace your core.",
-   "Breathe normally, hold the position."
-  ],
-  "cue": "Hips level — neither sagging nor piked.",
-  "mistake": "Holding your breath."
- },
- "lunge": {
-  "name": "Lunge",
-  "id": "3470",
-  "target": "Legs, glutes",
-  "body_part": null,
-  "equipment": "None",
-  "gif_file": "3470-kMzUs9Y.gif",
-  "steps": [
-   "Note: GIF is a forward lunge.",
-   "Step forward, torso tall.",
-   "Lower until both knees are about 90 degrees.",
-   "Push back to standing, then switch sides."
-  ],
-  "cue": "Short, controlled steps beat long, wobbly ones.",
-  "mistake": "Leaning forward or letting the front knee cave in."
- },
- "wind-sprint": {
-  "name": "Wind sprint",
-  "id": "0858",
-  "target": "Heart, power",
-  "body_part": null,
-  "equipment": "None",
-  "gif_file": "0858-Qoujh3Q.gif",
-  "steps": [
-   "Warm up 5 minutes first.",
-   "Run 30m at 70–80% effort on flat, even ground.",
-   "Walk back slowly to recover.",
-   "Repeat 6–8 times.",
-   "Stop if you feel a sharp pull."
-  ],
-  "cue": "Build to 50m only after 2–3 weeks if hamstrings and calves feel fine.",
-  "mistake": "Sprinting cold or on uneven ground."
- },
- "lateral-raise": {
-  "name": "Lateral raise",
-  "id": "0334",
-  "target": "Side shoulders",
-  "body_part": null,
-  "equipment": "Water bottles / band",
-  "gif_file": "0334-DsgkuIt.gif",
-  "steps": [
-   "Stand tall, light weight in each hand, arms by your sides.",
-   "Raise your arms out to the sides to shoulder height.",
-   "Slight bend in your elbows, palms facing down.",
-   "Lower slowly back to your sides."
-  ],
-  "cue": "Light weight, strict form — this is a finishing touch.",
-  "mistake": "Swinging the weights up with your body."
- },
- "prone-y-t-w-raise": {
-  "name": "Prone Y-T-W raise",
-  "id": null,
-  "target": "Upper back, posture",
-  "body_part": null,
-  "equipment": "None",
-  "gif_file": null,
-  "steps": [
-   "Lie face down, forehead on the floor.",
-   "Y: arms overhead in a Y, lift them and squeeze your shoulder blades.",
-   "T: arms out to the sides, lift and squeeze.",
-   "W: elbows bent, arms in a W, lift and squeeze.",
-   "Lower slowly each time, no jerking."
-  ],
-  "cue": "Small, controlled lifts — height is not the goal.",
-  "mistake": "Arching your lower back to lift higher."
- },
- "pike-push-up": {
-  "name": "Pike push-up",
-  "id": "3662",
-  "target": "Shoulders, triceps",
-  "body_part": null,
-  "equipment": "None",
-  "gif_file": "3662-XPUDTt7.gif",
-  "steps": [
-   "Note: GIF is a pike-to-cobra push-up — use only the pike part.",
-   "Walk your feet in until your hips are high, body in an inverted V.",
-   "Head between your arms, hands shoulder-width.",
-   "Bend your elbows to lower your head towards the floor, then press back up."
-  ],
-  "cue": "Hips high, weight over your shoulders.",
-  "mistake": "Letting your hips drop into a normal push-up."
- },
- "reverse-snow-angel": {
-  "name": "Reverse snow angel",
-  "id": null,
-  "target": "Upper back, posture",
-  "body_part": null,
-  "equipment": "None",
-  "gif_file": null,
-  "steps": [
-   "Lie face down, arms overhead.",
-   "Sweep your arms out and down to your sides.",
-   "Keep your arms off the floor throughout.",
-   "Squeeze your shoulder blades at the bottom.",
-   "Return slowly to overhead."
-  ],
-  "cue": "Slow and controlled, arms hovering.",
-  "mistake": "Rushing through with momentum."
- },
- "squat": {
-  "name": "Squat",
-  "id": "1685",
-  "target": "Legs, glutes",
-  "body_part": null,
-  "equipment": "None",
-  "gif_file": "1685-QChZi3x.gif",
-  "steps": [
-   "Note: GIF is a squat to overhead reach — for a plain squat, skip the reach.",
-   "Feet shoulder-width, toes slightly out.",
-   "Sit your hips back and down, chest up.",
-   "Knees track over your toes.",
-   "Drive through your whole foot to stand."
-  ],
-  "cue": "Depth first, then load — never at the cost of form.",
-  "mistake": "Knees collapsing inwards."
  }
 };
