@@ -61,9 +61,18 @@
         border-bottom: 1px solid var(--line);
       }
       .lang-bar {
-        display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
         margin-bottom: 10px;
       }
+      .repo-link {
+        display: inline-flex; align-items: center; gap: 7px;
+        font-size: 13.5px; font-weight: 700; color: var(--ink-soft);
+        text-decoration: none; white-space: nowrap; min-width: 0;
+      }
+      .repo-link svg { width: 18px; height: 18px; flex: none; }
+      .repo-link:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+      .repo-link:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
+      .lang-controls { display: flex; align-items: center; gap: 8px; margin-left: auto; }
       .lang-label {
         display: inline-flex; align-items: center; gap: 6px;
         font-size: 13.5px; font-weight: 700; color: var(--ink-soft);
@@ -258,6 +267,8 @@
       .attribution a { color: var(--ink-soft); }
 
       @media (max-width: 560px) {
+        .repo-link span { display: none; }
+        .lang-bar select { max-width: 168px; }
         .filters select { flex: 1 1 44%; }
         .detail-body { padding: 18px 16px 22px; }
         .detail-body h2 { font-size: 22px; }
@@ -272,6 +283,11 @@
     <div class="wrap">
       <div class="toolbar">
         <div class="lang-bar">
+          <a class="repo-link" href="https://github.com/wyattyhh/open-exercise-library" target="_blank" rel="noopener" title="open-exercise-library on GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            <span>GitHub</span>
+          </a>
+          <div class="lang-controls">
           <label class="lang-label" for="f-lang">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg>
             <span id="lang-label-text">Language</span>
@@ -288,6 +304,7 @@
             <option value="tr">Türkçe</option>
             <option value="zh">中文（简体）</option>
           </select>
+          </div>
         </div>
         <div class="search-row">
           <div class="search-box">
@@ -334,6 +351,8 @@
         <span id="foot-lead">Exercise data and animations from the</span>
         <a href="https://github.com/hasaneyldrm/exercises-dataset" target="_blank" rel="noopener">exercises-dataset</a> —
         GIFs © <a href="https://gymvisual.com/" target="_blank" rel="noopener">Gym Visual</a>.
+        <br />
+        Source code on GitHub: <a href="https://github.com/wyattyhh/open-exercise-library" target="_blank" rel="noopener">wyattyhh/open-exercise-library</a>
       </p>
     </div>
 
