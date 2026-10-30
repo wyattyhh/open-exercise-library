@@ -16,6 +16,12 @@ GIF media © Gym Visual.
 A clean backup fork of that dataset lives at
 https://github.com/wyattyhh/exercises-dataset. It is a backup only — do not
 develop in it. All development happens in this repo (`open-exercise-library`).
+The fork is also the live data source: the generator reads its
+`data/exercises.json`, and GIFs load from it via jsDelivr mirrors. The fork
+stays in sync with the original automatically — a workflow in the fork repo
+(`.github/workflows/sync-upstream.yml`, manual / weekly) calls GitHub's
+merge-upstream API. This only ever works cleanly because the fork is kept
+clean, with no edits in it, so merges are fast-forwards with no conflicts.
 
 ## The browser (`index.html`)
 
