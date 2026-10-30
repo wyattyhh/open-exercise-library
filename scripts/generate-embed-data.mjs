@@ -1,7 +1,14 @@
-// Generate embed-data.js from the exercises dataset.
+// Generate embed-data.js AND embed-data/<slug>.json from the exercises dataset.
 //
 // This file is the ONLY place embed-data.js comes from. Never edit
 // embed-data.js by hand — your edits will be lost the next time this runs.
+//
+// Why two outputs? The embed page used to load the whole ~1 MB
+// embed-data.js for every single exercise, which made a Notion page with
+// many embeds feel very slow. Now it loads only one tiny per-exercise
+// file (embed-data/<slug>.json, ~1-2 KB) plus the small embed-custom.js.
+// embed-data.js is still written as a fallback (for ?id= lookups and any
+// other consumer), and embed-data/index.json maps dataset id -> slug.
 //
 // Usage:
 //   node scripts/generate-embed-data.mjs
@@ -29,7 +36,7 @@
 // can also be passed per-embed via ?cue= and ?mistake= URL parameters,
 // which win over both files — see the README.
 
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -96,3 +103,26 @@ await writeFile(
   "utf8",
 );
 console.log(`wrote ${output}: ${Object.keys(out).length} entries from ${dataset.length} dataset records`);
+
+// Per-exercise files: embed-data/<slug>.json, plus an id -> slug index.
+// The embed page loads only the one file it needs. Old per-exercise files
+// are removed first, so a renamed exercise does not leave a stale file.
+const repoRoot = path.join(scriptDir, "..");
+const perDir = path.join(repoRoot, "embed-data");
+await rm(perDir, { recursive: true, force: true });
+await mkdir(perDir, { recursive: true });
+const index = {};
+for (const [key, entry] of Object.entries(out)) {
+  await writeFile(
+    path.join(perDir, `${key}.json`),
+    JSON.stringify(entry),
+    "utf8",
+  );
+  if (entry.id) index[entry.id] = key;
+}
+await writeFile(
+  path.join(perDir, "index.json"),
+  JSON.stringify(index),
+  "utf8",
+);
+console.log(`wrote ${perDir}: ${Object.keys(out).length} per-exercise files + index.json (${Object.keys(index).length} ids)`);

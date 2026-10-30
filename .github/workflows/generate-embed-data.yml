@@ -1,8 +1,11 @@
-# Regenerate embed-data.js from the exercises dataset.
+# Regenerate embed-data.js and embed-data/<slug>.json from the exercises dataset.
 #
 # Why this exists: embed-data.js is a GENERATED file (English steps only,
 # ~1 MB) built from the dataset's data/exercises.json (~17 MB, all
-# languages). It must never be edited by hand — this workflow rebuilds it.
+# languages). It must never be edited by hand — this workflow rebuilds it,
+# along with one tiny per-exercise file per exercise (embed-data/<slug>.json),
+# which is what the embed page actually loads (so one embed no longer has
+# to download the whole dataset).
 #
 # Hand-written content is safe: it lives in embed-custom.js, which this
 # workflow never touches, and the embed page merges the two files.
@@ -48,14 +51,14 @@ jobs:
       - name: Generate embed-data.js from the dataset
         run: node scripts/generate-embed-data.mjs
 
-      - name: Commit and push if embed-data.js changed
+      - name: Commit and push if generated data changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- embed-data.js; then
-            echo "embed-data.js unchanged — nothing to commit."
+          git add embed-data.js embed-data
+          if git diff --cached --quiet; then
+            echo "Generated data unchanged — nothing to commit."
           else
-            git add embed-data.js
-            git commit -m "Regenerate embed-data.js from exercises-dataset"
+            git commit -m "Regenerate embed data from exercises-dataset"
             git push
           fi

@@ -29,69 +29,110 @@
 </head>
 <body>
 <div class="card" id="app">Loading…</div>
-<script src="embed-data.js"></script>
 <script src="embed-custom.js"></script>
 <script>
 (function(){
   var params = new URLSearchParams(location.search);
   var slug = (params.get('ex') || '').toLowerCase();
-  // Generated dataset data, overlaid with hand-written entries.
-  // embed-custom.js is never overwritten by the generator.
-  var all = Object.assign({}, window.EMBED_EXERCISES || {}, window.EMBED_CUSTOM || {});
-  var ex = all[slug];
-  // ?id=<dataset id> is the unambiguous lookup (some names exist twice).
-  if (!ex && params.get('id')) {
-    var want = params.get('id');
-    for (var k in all) { if (all[k].id === want) { ex = all[k]; break; } }
-  }
   var app = document.getElementById('app');
-  if (!ex) {
-    app.innerHTML = '<div class="err">Exercise not found. Add <code>?ex=&lt;slug&gt;</code> to the URL, e.g. <code>?ex=push-up</code>.</div>';
-    return;
-  }
-  document.title = ex.name + ' — exercise';
   var esc = function(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
-  var gif = '';
-  if (ex.gif_file) {
-    var base = 'videos/' + ex.gif_file;
-    var cdn = 'https://cdn.jsdelivr.net/gh/wyattyhh/exercises-dataset@main/' + base;
-    var raw = 'https://raw.githubusercontent.com/wyattyhh/exercises-dataset/main/' + base;
-    var gh = 'https://github.com/wyattyhh/exercises-dataset/raw/main/' + base;
-    gif = '<div class="gif-wrap"><img src="' + cdn + '" alt="' + esc(ex.name) + ' animation" onerror="if(!this.dataset.f1){this.dataset.f1=1;this.src=\'' + raw + '\'}else if(!this.dataset.f2){this.dataset.f2=1;this.src=\'' + gh + '\'}"></div>';
-  } else {
-    gif = '<div class="no-gif">No animation in the dataset for this exercise — follow the steps below.</div>';
+
+  function loadFullDataFallback() {
+    // Only used when a per-exercise file is missing (e.g. an old URL).
+    // embed-data.js defines window.EMBED_EXERCISES.
+    return new Promise(function(resolve){
+      var s = document.createElement('script');
+      s.src = 'embed-data.js';
+      s.onload = function(){ resolve(window.EMBED_EXERCISES || {}); };
+      s.onerror = function(){ resolve({}); };
+      document.head.appendChild(s);
+    });
   }
-  var steps = (ex.steps || []).map(function(s){ return '<li>' + esc(s) + '</li>'; }).join('');
-  // Coaching notes can also travel with the embed itself:
-  // ?cue= and ?mistake= win over anything stored in the project files,
-  // so a plan can give the same exercise different notes without a repo change.
-  var cue = params.get('cue') || ex.cue;
-  var mistake = params.get('mistake') || ex.mistake;
-  var cueHtml = cue ? '<div class="cue"><b>Form cue:</b> ' + esc(cue) + '</div>' : '';
-  var mistakeHtml = mistake ? '<div class="mistake"><b>Common mistake:</b> ' + esc(mistake) + '</div>' : '';
-  var idHtml = ex.id ? ' · Dataset id: ' + esc(ex.id) : '';
-  // Session info, from the URL: either a ready-made ?session= string, or
-  // composed from ?sets= ?reps= ?work= ?duration= ?rest= ?note=
-  // e.g. ?ex=push-up&sets=3&reps=10-15&rest=60-90s
-  var session = params.get('session') || '';
-  if (!session) {
-    var parts = [];
-    if (params.get('sets')) parts.push(params.get('sets') + ' sets');
-    var work = params.get('reps') || params.get('work') || params.get('duration') || '';
-    if (work) parts.push('× ' + work);
-    if (params.get('rest')) parts.push('Rest ' + params.get('rest'));
-    if (params.get('note')) parts.push(params.get('note'));
-    session = parts.join(' · ');
+
+  function findEx() {
+    var custom = window.EMBED_CUSTOM || {};
+    if (slug && custom[slug]) return Promise.resolve(custom[slug]);
+    if (slug) {
+      // Fast path: one tiny per-exercise file (~1 KB), not the whole dataset.
+      return fetch('embed-data/' + encodeURIComponent(slug) + '.json')
+        .then(function(r){ if (!r.ok) throw new Error('not found'); return r.json(); })
+        .then(function(ex){
+          if (custom[slug]) return custom[slug];
+          return ex;
+        })
+        .catch(function(){
+          return loadFullDataFallback().then(function(all){
+            return all[slug] || custom[slug] || null;
+          });
+        });
+    }
+    if (params.get('id')) {
+      // Resolve the id through the small index, then load that one file.
+      return fetch('embed-data/index.json')
+        .then(function(r){ return r.json(); })
+        .then(function(index){
+          var s = index[params.get('id')];
+          if (!s) return null;
+          if (custom[s]) return custom[s];
+          return fetch('embed-data/' + encodeURIComponent(s) + '.json').then(function(r){ return r.json(); });
+        })
+        .catch(function(){ return null; });
+    }
+    return Promise.resolve(null);
   }
-  var sessionHtml = session ? '<div class="session">' + esc(session) + '</div>' : '';
-  app.innerHTML =
-    '<h1>' + esc(ex.name) + '</h1>' +
-    '<div class="chips"><span class="chip">' + esc(ex.target) + '</span><span class="chip">Equipment: ' + esc(ex.equipment) + '</span></div>' +
-    sessionHtml +
-    gif +
-    '<h2>Steps</h2><ol>' + steps + '</ol>' +
-    cueHtml + mistakeHtml +
-    '<div class="src">GIF source: exercises-dataset on GitHub, media © Gym visual.' + idHtml + ' · <a href="index.html">Open the full Exercise Browser</a></div>';
+
+  findEx().then(function(ex){
+    if (!ex) {
+      app.innerHTML = '<div class="err">Exercise not found. Add <code>?ex=&lt;slug&gt;</code> to the URL, e.g. <code>?ex=push-up</code>.</div>';
+      return;
+    }
+    document.title = ex.name + ' — exercise';
+    var gif = '';
+    if (ex.gif_file) {
+      var base = 'videos/' + ex.gif_file;
+      var mirrors = [
+        'https://cdn.jsdelivr.net/gh/wyattyhh/exercises-dataset@main/' + base,
+        'https://gcore.jsdelivr.net/gh/wyattyhh/exercises-dataset@main/' + base,
+        'https://fastly.jsdelivr.net/gh/wyattyhh/exercises-dataset@main/' + base,
+        'https://raw.githubusercontent.com/wyattyhh/exercises-dataset/main/' + base,
+        'https://github.com/wyattyhh/exercises-dataset/raw/main/' + base
+      ];
+      gif = '<div class="gif-wrap"><img src="' + mirrors[0] + '" alt="' + esc(ex.name) + ' animation" data-mirror="0" onerror="var m=JSON.parse(this.dataset.mirrors||\'[]\');var i=parseInt(this.dataset.mirror,10)+1;if(i<m.length){this.dataset.mirror=i;this.src=m[i];}"></div>';
+      gif = gif.replace('data-mirror="0"', 'data-mirror="0" data-mirrors=\'' + JSON.stringify(mirrors).replace(/'/g, '') + '\'');
+    } else {
+      gif = '<div class="no-gif">No animation in the dataset for this exercise — follow the steps below.</div>';
+    }
+    var steps = (ex.steps || []).map(function(s){ return '<li>' + esc(s) + '</li>'; }).join('');
+    // Coaching notes can also travel with the embed itself:
+    // ?cue= and ?mistake= win over anything stored in the project files.
+    var cue = params.get('cue') || ex.cue;
+    var mistake = params.get('mistake') || ex.mistake;
+    var cueHtml = cue ? '<div class="cue"><b>Form cue:</b> ' + esc(cue) + '</div>' : '';
+    var mistakeHtml = mistake ? '<div class="mistake"><b>Common mistake:</b> ' + esc(mistake) + '</div>' : '';
+    var idHtml = ex.id ? ' · Dataset id: ' + esc(ex.id) : '';
+    // Session info, from the URL: either a ready-made ?session= string, or
+    // composed from ?sets= ?reps= ?work= ?duration= ?rest= ?note=
+    // e.g. ?ex=push-up&sets=3&reps=10-15&rest=60-90s
+    var session = params.get('session') || '';
+    if (!session) {
+      var parts = [];
+      if (params.get('sets')) parts.push(params.get('sets') + ' sets');
+      var work = params.get('reps') || params.get('work') || params.get('duration') || '';
+      if (work) parts.push('× ' + work);
+      if (params.get('rest')) parts.push('Rest ' + params.get('rest'));
+      if (params.get('note')) parts.push(params.get('note'));
+      session = parts.join(' · ');
+    }
+    var sessionHtml = session ? '<div class="session">' + esc(session) + '</div>' : '';
+    app.innerHTML =
+      '<h1>' + esc(ex.name) + '</h1>' +
+      '<div class="chips"><span class="chip">' + esc(ex.target) + '</span><span class="chip">Equipment: ' + esc(ex.equipment) + '</span></div>' +
+      sessionHtml +
+      gif +
+      '<h2>Steps</h2><ol>' + steps + '</ol>' +
+      cueHtml + mistakeHtml +
+      '<div class="src">GIF source: exercises-dataset on GitHub, media © Gym visual.' + idHtml + ' · <a href="index.html">Open the full Exercise Browser</a></div>';
+  });
 })();
 </script>
 </body>

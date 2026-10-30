@@ -54,7 +54,8 @@ placeholder with a Retry button and an "open animation" link.
 | `assets/i18n/<code>.js` | Instruction translations, loaded on demand per language (`es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`, `zh`). English is built in. |
 | `assets/i18n/names-zh.js` | Chinese exercise names and facet translations. |
 | `embed.html` | The single-exercise embed page (see below). |
-| `embed-data.js` | **Generated** data for the embed page: all 1,324 exercises in English. Never edit by hand — see "Regenerating embed data" below. |
+| `embed-data.js` | **Generated** data for the embed page: all 1,324 exercises in English. Never edit by hand — see "Regenerating embed data" below. Kept as a fallback; the embed page normally loads only its own per-exercise file. |
+| `embed-data/<slug>.json` | **Generated** one tiny file per exercise (~1 KB). This is what the embed page loads — so one embed does not have to download the whole dataset. `embed-data/index.json` maps dataset id → slug for `?id=` lookups. |
 | `embed-custom.js` | Hand-written entries the generator never touches: exercises the dataset does not have, substitute GIFs, and form cues / common mistakes kept in this project. |
 | `scripts/generate-embed-data.mjs` | The generator script. |
 | `.github/workflows/generate-embed-data.yml` | GitHub Action that runs the generator (manual, weekly, or when the script changes) and commits the result. |
@@ -156,7 +157,7 @@ in this repo — use only what the person asking for the plan tells you.
 
 ### Regenerating embed data
 
-`embed-data.js` is generated, never hand-edited:
+`embed-data.js` and `embed-data/<slug>.json` are generated, never hand-edited:
 
 ```sh
 node scripts/generate-embed-data.mjs
@@ -165,10 +166,11 @@ node scripts/generate-embed-data.mjs
 By default it fetches the dataset from the backup fork
 (`cdn.jsdelivr.net/gh/wyattyhh/exercises-dataset@main/data/exercises.json`);
 pass `--input <url-or-local-file>` to use another source, or `--output <path>`
-to write elsewhere. The same script runs in GitHub Actions — manually from
-the Actions tab, weekly on Sundays, or when the script itself changes — and
-commits `embed-data.js` back to main only if it actually changed. Pushing to
-main triggers a GitHub Pages rebuild automatically.
+to write the full file elsewhere (per-exercise files always go to
+`embed-data/` next to it). The same script runs in GitHub Actions — manually
+from the Actions tab, weekly on Sundays, or when the script itself changes —
+and commits the generated files back to main only if they actually changed.
+Pushing to main triggers a GitHub Pages rebuild automatically.
 
 ### Adding a form cue or a common mistake to an exercise
 
