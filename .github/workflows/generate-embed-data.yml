@@ -1,0 +1,61 @@
+# Regenerate embed-data.js from the exercises dataset.
+#
+# Why this exists: embed-data.js is a GENERATED file (English steps only,
+# ~1 MB) built from the dataset's data/exercises.json (~17 MB, all
+# languages). It must never be edited by hand — this workflow rebuilds it.
+#
+# Hand-written content is safe: it lives in embed-custom.js, which this
+# workflow never touches, and the embed page merges the two files.
+#
+# Triggers:
+#   - Manually, from the Actions tab (workflow_dispatch) — the normal way
+#     to refresh after the dataset changes.
+#   - Weekly, Sundays at 00:00 UTC, so a dataset update is picked up even
+#     if nobody remembers to press the button.
+#   - Whenever this workflow or the generator script itself changes.
+#
+# What it does: checks out the repo, runs the generator against the backup
+# fork (jsDelivr mirror of wyattyhh/exercises-dataset), and commits the
+# result back to main only if embed-data.js actually changed. Pushing to
+# main triggers a GitHub Pages rebuild automatically.
+
+name: Generate embed data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 0"
+  push:
+    paths:
+      - "scripts/generate-embed-data.mjs"
+      - ".github/workflows/generate-embed-data.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate embed-data.js from the dataset
+        run: node scripts/generate-embed-data.mjs
+
+      - name: Commit and push if embed-data.js changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- embed-data.js; then
+            echo "embed-data.js unchanged — nothing to commit."
+          else
+            git add embed-data.js
+            git commit -m "Regenerate embed-data.js from exercises-dataset"
+            git push
+          fi
