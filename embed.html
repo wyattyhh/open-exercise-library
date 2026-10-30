@@ -30,11 +30,14 @@
 <body>
 <div class="card" id="app">Loading…</div>
 <script src="embed-data.js"></script>
+<script src="embed-custom.js"></script>
 <script>
 (function(){
   var params = new URLSearchParams(location.search);
   var slug = (params.get('ex') || '').toLowerCase();
-  var all = window.EMBED_EXERCISES || {};
+  // Generated dataset data, overlaid with hand-written entries.
+  // embed-custom.js is never overwritten by the generator.
+  var all = Object.assign({}, window.EMBED_EXERCISES || {}, window.EMBED_CUSTOM || {});
   var ex = all[slug];
   // ?id=<dataset id> is the unambiguous lookup (some names exist twice).
   if (!ex && params.get('id')) {
@@ -59,8 +62,13 @@
     gif = '<div class="no-gif">No animation in the dataset for this exercise — follow the steps below.</div>';
   }
   var steps = (ex.steps || []).map(function(s){ return '<li>' + esc(s) + '</li>'; }).join('');
-  var cueHtml = ex.cue ? '<div class="cue"><b>Form cue:</b> ' + esc(ex.cue) + '</div>' : '';
-  var mistakeHtml = ex.mistake ? '<div class="mistake"><b>Common mistake:</b> ' + esc(ex.mistake) + '</div>' : '';
+  // Coaching notes can also travel with the embed itself:
+  // ?cue= and ?mistake= win over anything stored in the project files,
+  // so a plan can give the same exercise different notes without a repo change.
+  var cue = params.get('cue') || ex.cue;
+  var mistake = params.get('mistake') || ex.mistake;
+  var cueHtml = cue ? '<div class="cue"><b>Form cue:</b> ' + esc(cue) + '</div>' : '';
+  var mistakeHtml = mistake ? '<div class="mistake"><b>Common mistake:</b> ' + esc(mistake) + '</div>' : '';
   var idHtml = ex.id ? ' · Dataset id: ' + esc(ex.id) : '';
   // Session info, from the URL: either a ready-made ?session= string, or
   // composed from ?sets= ?reps= ?work= ?duration= ?rest= ?note=
