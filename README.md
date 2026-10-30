@@ -42,7 +42,8 @@ Open the live site and you can:
   page, so a language-specific link can be shared, e.g.
   `https://wyattyhh.github.io/open-exercise-library/?lang=zh`.
 
-GIFs load from jsDelivr CDN mirrors first, falling back to
+GIFs load from the backup fork (see "Data source and credits" above) via
+jsDelivr CDN mirrors first (`cdn`, `gcore`, `fastly`), falling back to
 `raw.githubusercontent.com`. If a GIF does not load, the page shows a
 placeholder with a Retry button and an "open animation" link.
 
@@ -51,8 +52,7 @@ placeholder with a Retry button and an "open animation" link.
 | File | What it is |
 | --- | --- |
 | `index.html` | The browser itself (search, filters, detail view, language switcher). |
-| `assets/i18n/<code>.js` | Instruction translations, loaded on demand per language (`es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`, `zh`). English is built in. |
-| `assets/i18n/names-zh.js` | Chinese exercise names and facet translations. |
+| `assets/i18n/<code>.js` | Instruction translations, loaded on demand per language (`es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`, `zh`). English is built in. Chinese exercise names and facet translations are embedded in `index.html` itself (there is no separate `names-zh.js` file). |
 | `embed.html` | The single-exercise embed page (see below). |
 | `embed-data.js` | **Generated** data for the embed page: all 1,324 exercises in English. Never edit by hand — see "Regenerating embed data" below. Kept as a fallback; the embed page normally loads only its own per-exercise file. |
 | `embed-data/<slug>.json` | **Generated** one tiny file per exercise (~1 KB). This is what the embed page loads — so one embed does not have to download the whole dataset. `embed-data/index.json` maps dataset id → slug for `?id=` lookups. |
@@ -64,9 +64,12 @@ placeholder with a Retry button and an "open animation" link.
 ## The embed page (`embed.html`)
 
 A deliberately bare page for embedding **one exercise at a time**: no search,
-no filters, no navigation — just the exercise name, target/equipment, GIF,
+no filters, no navigation — just the exercise name, target/equipment, an
+optional session box (sets / reps / rest, from URL parameters), GIF,
 steps, and (where available) a form cue and a common mistake. It is made to
 fit inside a Notion embed block, but any iframe/embed container works.
+Each embed loads only its own tiny data file (see below), so a page with
+many embeds does not have to download the whole dataset for each one.
 
 ### URL format
 
@@ -126,6 +129,19 @@ embed.html?ex=pull-up&session=4× as many good reps as you can (aim 5–8) · Re
 embed.html?ex=plank&session=3×30–45s · Rest 60–90s
 ```
 
+### Embed language: `?lang=`
+
+Add `?lang=` to an embed URL to get the steps in another language, e.g.
+`embed.html?ex=push-up&lang=zh`. Supported codes are the dataset's
+languages other than English: `es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`,
+`zh`. The embed loads `embed-data/<lang>/<slug>.json` — the dataset's own
+translation, not the English custom entry — and its small UI labels
+(Steps, Form cue, Common mistake, Equipment) switch to that language too.
+An unknown code falls back to English, and a missing translation (for
+example a custom-only exercise like dead-hang) falls back to the English
+entry. `?cue=` / `?mistake=` still win over everything, so a cue in the
+embed's own language can be passed that way.
+
 ### Embedding in Notion
 
 1. In a Notion page, add an **Embed** block.
@@ -156,22 +172,10 @@ in this repo — use only what the person asking for the plan tells you.
 5. **Keep the plan short.** The plan itself should be day headings + embeds
    (+ a warm-up / rest note if needed). Detailed guidance lives in the embed.
 
-### Embed language: `?lang=`
-
-Add `?lang=` to an embed URL to get the steps in another language, e.g.
-`embed.html?ex=push-up&lang=zh`. Supported codes are the dataset's own
-10 languages minus English: `es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`,
-`zh`. The embed loads `embed-data/<lang>/<slug>.json` — the dataset's own
-translation, not the English custom entry — and its small UI labels
-(Steps, Form cue, Common mistake, Equipment) switch to that language too.
-An unknown code falls back to English, and a missing translation (for
-example a custom-only exercise like dead-hang) falls back to the English
-entry. `?cue=` / `?mistake=` still win over everything, so a cue in the
-embed's own language can be passed that way.
-
 ### Regenerating embed data
 
-`embed-data.js` and `embed-data/<slug>.json` are generated, never hand-edited:
+`embed-data.js`, `embed-data/<slug>.json` and `embed-data/<lang>/<slug>.json`
+are all generated, never hand-edited:
 
 ```sh
 node scripts/generate-embed-data.mjs
@@ -180,11 +184,13 @@ node scripts/generate-embed-data.mjs
 By default it fetches the dataset from the backup fork
 (`cdn.jsdelivr.net/gh/wyattyhh/exercises-dataset@main/data/exercises.json`);
 pass `--input <url-or-local-file>` to use another source, or `--output <path>`
-to write the full file elsewhere (per-exercise files always go to
-`embed-data/` next to it). The same script runs in GitHub Actions — manually
-from the Actions tab, weekly on Sundays, or when the script itself changes —
-and commits the generated files back to main only if they actually changed.
-Pushing to main triggers a GitHub Pages rebuild automatically.
+to write the full file elsewhere (per-exercise and translated files always
+go to `embed-data/` next to it). The same script runs in GitHub Actions —
+manually from the Actions tab, weekly on Sundays, or when the script or the
+workflow itself changes — and commits the generated files back to main only
+if they actually changed. Pushing to main triggers a GitHub Pages rebuild
+automatically. Note the fork's own sync workflow
+(`.github/workflows/sync-upstream.yml`) lives in the fork repo, not here.
 
 ### Adding a form cue or a common mistake to an exercise
 
@@ -235,7 +241,7 @@ Do not present a substitute GIF as if it were the exact move.
 ## Contributing / updating
 
 - Browser changes go in `index.html` (and `assets/i18n/` for translations).
-- Embed changes go in `embed.html`, `embed-custom.js`, or the generator (`scripts/generate-embed-data.mjs`) — never by hand in `embed-data.js`.
+- Embed changes go in `embed.html`, `embed-custom.js`, or the generator (`scripts/generate-embed-data.mjs`) — never by hand in `embed-data.js` or any file under `embed-data/`.
 - Push updates to this repo; do not use the Muse share link for updates, and
   do not edit the dataset fork. After pushing, check that the GitHub Pages
   build finished and that the live site serves the new files before calling
