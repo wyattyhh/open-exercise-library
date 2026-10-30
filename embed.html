@@ -34,7 +34,13 @@
 (function(){
   var params = new URLSearchParams(location.search);
   var slug = (params.get('ex') || '').toLowerCase();
-  var ex = window.EMBED_EXERCISES && window.EMBED_EXERCISES[slug];
+  var all = window.EMBED_EXERCISES || {};
+  var ex = all[slug];
+  // ?id=<dataset id> is the unambiguous lookup (some names exist twice).
+  if (!ex && params.get('id')) {
+    var want = params.get('id');
+    for (var k in all) { if (all[k].id === want) { ex = all[k]; break; } }
+  }
   var app = document.getElementById('app');
   if (!ex) {
     app.innerHTML = '<div class="err">Exercise not found. Add <code>?ex=&lt;slug&gt;</code> to the URL, e.g. <code>?ex=push-up</code>.</div>';
@@ -52,7 +58,10 @@
   } else {
     gif = '<div class="no-gif">No animation in the dataset for this exercise — follow the steps below.</div>';
   }
-  var steps = ex.steps.map(function(s){ return '<li>' + esc(s) + '</li>'; }).join('');
+  var steps = (ex.steps || []).map(function(s){ return '<li>' + esc(s) + '</li>'; }).join('');
+  var cueHtml = ex.cue ? '<div class="cue"><b>Form cue:</b> ' + esc(ex.cue) + '</div>' : '';
+  var mistakeHtml = ex.mistake ? '<div class="mistake"><b>Common mistake:</b> ' + esc(ex.mistake) + '</div>' : '';
+  var idHtml = ex.id ? ' · Dataset id: ' + esc(ex.id) : '';
   // Session info, from the URL: either a ready-made ?session= string, or
   // composed from ?sets= ?reps= ?work= ?duration= ?rest= ?note=
   // e.g. ?ex=push-up&sets=3&reps=10-15&rest=60-90s
@@ -73,9 +82,8 @@
     sessionHtml +
     gif +
     '<h2>Steps</h2><ol>' + steps + '</ol>' +
-    '<div class="cue"><b>Form cue:</b> ' + esc(ex.cue) + '</div>' +
-    '<div class="mistake"><b>Common mistake:</b> ' + esc(ex.mistake) + '</div>' +
-    '<div class="src">GIF source: exercises-dataset on GitHub, media © Gym visual. · <a href="index.html">Open the full Exercise Browser</a></div>';
+    cueHtml + mistakeHtml +
+    '<div class="src">GIF source: exercises-dataset on GitHub, media © Gym visual.' + idHtml + ' · <a href="index.html">Open the full Exercise Browser</a></div>';
 })();
 </script>
 </body>
