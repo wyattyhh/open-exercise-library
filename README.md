@@ -52,11 +52,11 @@ placeholder with a Retry button and an "open animation" link.
 | File | What it is |
 | --- | --- |
 | `index.html` | The browser itself (search, filters, detail view, language switcher). |
-| `assets/i18n/<code>.js` | Instruction translations, loaded on demand per language (`es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`, `zh`). English is built in. Chinese exercise names and facet translations are embedded in `index.html` itself (there is no separate `names-zh.js` file). |
+| `assets/i18n/<code>.js` | Instruction translations, loaded on demand per language (`es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`, `zh`). English is built in. Chinese exercise names and facet translations are embedded in `index.html` itself; `assets/i18n/zh-names.js` is that same map extracted as a separate file, loaded by the embed page for `?lang=zh` (re-extract it if the names in `index.html` change). |
 | `embed.html` | The single-exercise embed page (see below). |
 | `embed-data.js` | **Generated** data for the embed page: all 1,324 exercises in English. Never edit by hand — see "Regenerating embed data" below. Kept as a fallback; the embed page normally loads only its own per-exercise file. |
 | `embed-data/<slug>.json` | **Generated** one tiny file per exercise (~1 KB). This is what the embed page loads — so one embed does not have to download the whole dataset. `embed-data/index.json` maps dataset id → slug for `?id=` lookups. |
-| `embed-data/<lang>/<slug>.json` | **Generated** translated steps for one exercise, for `es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`, `zh`. The embed page loads these when `?lang=` is set (see below). Names, target and equipment stay English; custom-only exercises have no translation and fall back to English. |
+| `embed-data/<lang>/<slug>.json` | **Generated** translated steps for one exercise, for `es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`, `zh`. The embed page loads these when `?lang=` is set (see below). Names, target and equipment stay English, except for `?lang=zh`, where the embed also loads `assets/i18n/zh-names.js` and shows the Chinese name, target and equipment; custom-only exercises have no translation and fall back to English. |
 | `embed-custom.js` | Hand-written entries the generator never touches: exercises the dataset does not have, substitute GIFs, and form cues / common mistakes kept in this project. |
 | `scripts/generate-embed-data.mjs` | The generator script. |
 | `.github/workflows/generate-embed-data.yml` | GitHub Action that runs the generator (manual, weekly, or when the script changes) and commits the result. |
@@ -137,9 +137,12 @@ languages other than English: `es`, `fr`, `hi`, `it`, `ko`, `pl`, `ru`, `tr`,
 `zh`. The embed loads `embed-data/<lang>/<slug>.json` — the dataset's own
 translation, not the English custom entry — and its small UI labels
 (Steps, Form cue, Common mistake, Equipment) switch to that language too.
-An unknown code falls back to English, and a missing translation (for
-example a custom-only exercise like dead-hang) falls back to the English
-entry. `?cue=` / `?mistake=` still win over everything, so a cue in the
+For `?lang=zh` the exercise title, target and equipment switch to Chinese
+as well, from `assets/i18n/zh-names.js`. Other languages have no translated
+exercise names in this project, so their titles stay English while the steps
+and UI labels translate. An unknown code falls back to English, and a missing
+translation (for example a custom-only exercise like dead-hang) falls back to
+the English entry. `?cue=` / `?mistake=` still win over everything, so a cue in the
 embed's own language can be passed that way.
 
 ### Embedding in Notion

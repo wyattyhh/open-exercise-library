@@ -35,11 +35,14 @@
   var params = new URLSearchParams(location.search);
   var slug = (params.get('ex') || '').toLowerCase();
   // Language for the steps: ?lang=zh, es, fr, hi, it, ko, pl, ru, tr.
-  // Names, target and equipment stay English (the dataset's name field
-  // is English-only); only the steps are translated. Anything else, or
-  // no ?lang= at all, means English. Custom-only exercises (those that
-  // exist only in embed-custom.js) have no translation and fall back
-  // to English.
+  // The steps and UI labels are translated in every language. The
+  // exercise name, target and equipment are English-only in the dataset,
+  // except Chinese: for ?lang=zh they come from assets/i18n/zh-names.js
+  // (the Chinese name/facet map extracted from index.html). Other
+  // languages have no translated names in this project, so they fall
+  // back to the English name. Anything else, or no ?lang= at all, means
+  // English. Custom-only exercises (those that exist only in
+  // embed-custom.js) have no translation and fall back to English.
   var LANGS = ['es','fr','hi','it','ko','pl','ru','tr','zh'];
   var lang = (params.get('lang') || 'en').toLowerCase();
   if (LANGS.indexOf(lang) < 0) lang = 'en';
@@ -115,12 +118,38 @@
     return Promise.resolve(null);
   }
 
-  findEx().then(function(ex){
+  // Chinese names/facets live in assets/i18n/zh-names.js, not in the
+  // per-exercise JSON files. Load it (only for ?lang=zh) in parallel
+  // with the exercise data; if it fails, the title falls back to English.
+  function loadZhNames() {
+    if (lang !== 'zh') return Promise.resolve(false);
+    if (window.EX_NAMES_ZH) return Promise.resolve(true);
+    return new Promise(function(resolve){
+      var s = document.createElement('script');
+      s.src = 'assets/i18n/zh-names.js';
+      s.onload = function(){ resolve(true); };
+      s.onerror = function(){ resolve(false); };
+      document.head.appendChild(s);
+    });
+  }
+
+  Promise.all([loadZhNames(), findEx()]).then(function(results){
+    var ex = results[1];
     if (!ex) {
       app.innerHTML = '<div class="err">' + esc(UI.notFound) + '</div>';
       return;
     }
-    document.title = ex.name + ' — exercise';
+    var displayName = ex.name;
+    var displayTarget = ex.target;
+    var displayEquipment = ex.equipment;
+    if (lang === 'zh' && window.EX_NAMES_ZH && ex.id && window.EX_NAMES_ZH[ex.id]) {
+      displayName = window.EX_NAMES_ZH[ex.id];
+    }
+    if (lang === 'zh' && window.EX_FACETS_ZH) {
+      if (window.EX_FACETS_ZH.t && window.EX_FACETS_ZH.t[ex.target]) displayTarget = window.EX_FACETS_ZH.t[ex.target];
+      if (window.EX_FACETS_ZH.eq && window.EX_FACETS_ZH.eq[ex.equipment]) displayEquipment = window.EX_FACETS_ZH.eq[ex.equipment];
+    }
+    document.title = lang === 'zh' ? displayName : displayName + ' — exercise';
     var gif = '';
     if (ex.gif_file) {
       var base = 'videos/' + ex.gif_file;
@@ -131,7 +160,7 @@
         'https://raw.githubusercontent.com/wyattyhh/exercises-dataset/main/' + base,
         'https://github.com/wyattyhh/exercises-dataset/raw/main/' + base
       ];
-      gif = '<div class="gif-wrap"><img src="' + mirrors[0] + '" alt="' + esc(ex.name) + ' animation" data-mirror="0" onerror="var m=JSON.parse(this.dataset.mirrors||\'[]\');var i=parseInt(this.dataset.mirror,10)+1;if(i<m.length){this.dataset.mirror=i;this.src=m[i];}"></div>';
+      gif = '<div class="gif-wrap"><img src="' + mirrors[0] + '" alt="' + esc(displayName) + (lang === 'zh' ? ' 动画' : ' animation') + '" data-mirror="0" onerror="var m=JSON.parse(this.dataset.mirrors||\'[]\');var i=parseInt(this.dataset.mirror,10)+1;if(i<m.length){this.dataset.mirror=i;this.src=m[i];}"></div>';
       gif = gif.replace('data-mirror="0"', 'data-mirror="0" data-mirrors=\'' + JSON.stringify(mirrors).replace(/'/g, '') + '\'');
     } else {
       gif = '<div class="no-gif">' + esc(UI.noGif) + '</div>';
@@ -159,8 +188,8 @@
     }
     var sessionHtml = session ? '<div class="session">' + esc(session) + '</div>' : '';
     app.innerHTML =
-      '<h1>' + esc(ex.name) + '</h1>' +
-      '<div class="chips"><span class="chip">' + esc(ex.target) + '</span><span class="chip">' + esc(UI.equipment) + ': ' + esc(ex.equipment) + '</span></div>' +
+      '<h1>' + esc(displayName) + '</h1>' +
+      '<div class="chips"><span class="chip">' + esc(displayTarget) + '</span><span class="chip">' + esc(UI.equipment) + ': ' + esc(displayEquipment) + '</span></div>' +
       sessionHtml +
       gif +
       '<h2>' + esc(UI.steps) + '</h2><ol>' + steps + '</ol>' +
